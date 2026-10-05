@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Exam Token - SecureExam AI</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="token-entry-page">
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="token-entry-container">
+        <div class="token-card glassmorphism">
+            <div class="token-header">
+                <div class="logo-ring-small">
+                    <div class="logo-pulse-small"></div>
+                    <span class="logo-icon">🛡️</span>
+                </div>
+                <h1>Enter Exam Token</h1>
+                <p class="token-subtitle">Paste your token to start the exam</p>
+            </div>
+            
+            <div class="token-input-section">
+                <div class="input-group floating">
+                    <input type="text" id="tokenInput" required placeholder=" " maxlength="8">
+                    <label for="tokenInput">
+                        <span class="input-icon">🔑</span>
+                        Exam Token
+                    </label>
+                    <div class="input-glow"></div>
+                </div>
+                
+                <div class="test-type-selector">
+                    <label class="selector-label">Select Test Type:</label>
+                    <div class="test-options">
+                        <label class="test-option">
+                            <input type="radio" name="testType" value="JAVA" checked>
+                            <span class="option-content">
+                                <span class="option-icon">☕</span>
+                                <span class="option-text">Java</span>
+                            </span>
+                        </label>
+                        <label class="test-option">
+                            <input type="radio" name="testType" value="PYTHON">
+                            <span class="option-content">
+                                <span class="option-icon">🐍</span>
+                                <span class="option-text">Python</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button onclick="validateAndEnter()" class="btn btn-premium btn-full">
+                    <span class="btn-glow"></span>
+                    <span class="btn-text">Start Exam</span>
+                    <span class="btn-icon">→</span>
+                </button>
+            </div>
+            
+            <div id="errorMessage" class="error-message glass hidden"></div>
+            
+            <div class="token-help">
+                <div class="help-item">
+                    <span class="help-icon">⏱️</span>
+                    <span>Token valid for 90 minutes</span>
+                </div>
+                <div class="help-item">
+                    <span class="help-icon">🔒</span>
+                    <span>One-time use only</span>
+                </div>
+            </div>
+            
+            <a href="dashboard.html" class="back-link">
+                <span>← Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+    
+    <script src="js/auth.js"></script>
+    <script>
+        async function validateAndEnter() {
+            const token = document.getElementById('tokenInput').value.trim().toUpperCase();
+            const testType = document.querySelector('input[name="testType"]:checked').value;
+            const errorDiv = document.getElementById('errorMessage');
+            
+            if (!token) {
+                showError('Please enter a token');
+                return;
+            }
+            
+            const authManager = new AuthManager();
+            const user = authManager.getUser();
+            const authToken = authManager.getToken();
+            
+            console.log('Token input:', token);
+            console.log('Test type:', testType);
+            console.log('User:', user);
+            console.log('Auth token exists:', !!authToken);
+            
+            if (!user || !user.username) {
+                showError('Please login first');
+                return;
+            }
+            
+            try {
+                const response = await authManager.makeAuthenticatedRequest(
+                    'http://localhost:8080/api/token/validate',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            token: token,
+                            username: user.username,
+                            testType: testType
+                        })
+                    }
+                );
+                
+                console.log('Response status:', response.status);
+                
+                if (response.status === 403) {
+                    showError('Session expired. Please login again.');
+                    localStorage.removeItem('jwt_token');
+                    localStorage.removeItem('exam_user');
+                    localStorage.removeItem('exam_token');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
+                }
+                
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+                
+                if (!responseText) {
+                    showError('Server returned empty response. Status: ' + response.status);
+                    return;
+                }
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    showError('Server returned invalid JSON. Response: ' + responseText.substring(0, 200));
+                    return;
+                }
+                
+                console.log('Response data:', data);
+                
+                if (data.valid) {
+                    localStorage.setItem('exam_token', token);
+                    localStorage.setItem('exam_test_type', testType);
+                    localStorage.setItem('exam_session', JSON.stringify({
+                        sessionId: Date.now().toString(),
+                        token: token,
+                        testType: testType,
+                        username: user.username,
+                        startTime: Date.now()
+                    }));
+                    
+                    window.location.href = 'exam.html';
+                } else {
+                    showError(data.message || 'Invalid token');
+                }
+            } catch (error) {
+                console.error('Token validation error:', error);
+                showError('Error: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('tokenInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                validateAndEnter();
+            }
+        });
+    </script>
+</body>
+</html>

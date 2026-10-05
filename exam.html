@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam - SecureExam AI</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+</head>
+<body>
+    <div id="examContainer" class="exam-container">
+        <!-- Top Bar -->
+        <header class="exam-header">
+            <div class="header-left">
+                <div class="logo-small">🛡️ SecureExam AI</div>
+                <div class="exam-progress">
+                    <span>Question <span id="currentQuestion">1</span> of <span id="totalQuestions">2</span></span>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div id="timer" class="timer">
+                    <span class="timer-label">Time Remaining:</span>
+                    <span id="timeDisplay" class="time-display">30:00</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div id="riskIndicator" class="risk-indicator">
+                    <span class="risk-label">Risk Score:</span>
+                    <span id="riskScore" class="risk-value low">0</span>
+                </div>
+                <button id="submitExamBtn" class="btn btn-danger">Submit Exam</button>
+            </div>
+        </header>
+        
+        <!-- Violation Warning Overlay -->
+        <div id="violationOverlay" class="violation-overlay hidden">
+            <div class="violation-modal">
+                <div class="violation-icon">⚠️</div>
+                <h2>Security Violation Detected!</h2>
+                <p id="violationMessage">Tab switching detected</p>
+                <p class="violation-count">Violation Count: <span id="violationCount">1</span>/5</p>
+                <button id="acknowledgeViolation" class="btn btn-primary">I Understand</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="exam-content">
+            <!-- Left Panel: Problem Statement -->
+            <div class="problem-panel">
+                <div class="panel-header">
+                    <h3 id="problemTitle">Problem 1: Two Sum</h3>
+                    <div class="difficulty-badge" id="difficultyBadge">Medium</div>
+                </div>
+                
+                <div class="problem-description" id="problemDescription">
+                    Loading...
+                </div>
+                
+                <div class="examples-section">
+                    <h4>Examples:</h4>
+                    <div id="examples"></div>
+                </div>
+                
+                <div class="constraints-section">
+                    <h4>Constraints:</h4>
+                    <ul id="constraints"></ul>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Code Editor -->
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <span class="language-badge">Java</span>
+                    <div class="editor-actions">
+                        <button id="resetCodeBtn" class="btn btn-secondary btn-small">Reset</button>
+                    </div>
+                </div>
+                
+                <div id="monacoEditor" class="monaco-container"></div>
+                
+                <div class="editor-toolbar">
+                    <button id="runCodeBtn" class="btn btn-primary">
+                        <span class="btn-icon">▶</span> Run Code
+                    </button>
+                    <button id="submitCodeBtn" class="btn btn-success">
+                        <span class="btn-icon">✓</span> Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Panel: Camera & Output -->
+        <div class="bottom-panel">
+            <div class="camera-section">
+                <div class="camera-header">
+                    <span class="camera-status">
+                        <span class="status-dot recording"></span>
+                        AI Proctoring Active
+                    </span>
+                </div>
+                <video id="cameraFeed" autoplay muted playsinline></video>
+                <canvas id="cameraCanvas" class="hidden"></canvas>
+                <div class="proctoring-info">
+                    <div class="proctor-item" id="faceStatus">
+                        <span class="icon">👤</span>
+                        <span class="status">Face: Detecting...</span>
+                    </div>
+                    <div class="proctor-item" id="eyeStatus">
+                        <span class="icon">👁️</span>
+                        <span class="status">Eyes: Tracking...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <div class="output-header">
+                    <h4>Output</h4>
+                    <button id="clearOutputBtn" class="btn btn-secondary btn-small">Clear</button>
+                </div>
+                <div id="outputConsole" class="output-console">
+                    <p class="placeholder">Run your code to see output...</p>
+                </div>
+                <div id="testCaseResults" class="test-case-results hidden">
+                    <h4>Test Case Results:</h4>
+                    <div id="testCases"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Modal -->
+        <div id="navModal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Question Navigator</h3>
+                <div id="questionNav" class="question-nav"></div>
+                <button id="closeNavModal" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/exam.js"></script>
+</body>
+</html>

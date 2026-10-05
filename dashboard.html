@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SecureExam AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a25',
+                            600: '#232332',
+                        },
+                        brand: {
+                            primary: '#6366f1',
+                            secondary: '#8b5cf6',
+                            accent: '#ec4899',
+                        },
+                        java: {
+                            DEFAULT: '#f59e0b',
+                            dark: '#d97706',
+                        },
+                        python: {
+                            DEFAULT: '#3b82f6',
+                            dark: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #1a1a25 100%);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(26, 26, 37, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(26, 26, 37, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glow-java { box-shadow: 0 0 40px rgba(245, 158, 11, 0.15); }
+        .glow-python { box-shadow: 0 0 40px rgba(59, 130, 246, 0.15); }
+        .btn-gradient-java { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .btn-gradient-python { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+        .progress-ring { transform: rotate(-90deg); }
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="text-white antialiased overflow-x-hidden">
+    <!-- Background Orbs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="orb w-96 h-96 bg-brand-primary/30 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="orb w-96 h-96 bg-brand-accent/20 bottom-0 right-0 translate-x-1/2 translate-y-1/2"></div>
+        <div class="orb w-64 h-64 bg-brand-secondary/20 top-1/2 right-1/4"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
+                        <span class="text-xl">🛡️</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-lg">SecureExam</span>
+                        <span class="text-brand-accent font-bold">AI</span>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 ml-4">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span class="text-xs text-green-400 font-medium">Live</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-accent flex items-center justify-center relative">
+                            <span id="userInitial" class="font-bold text-sm">C</span>
+                            <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-dark-800"></div>
+                        </div>
+                        <div class="hidden sm:block text-right">
+                            <div id="candidateName" class="font-medium text-sm">Candidate</div>
+                            <div class="text-xs text-gray-400">Exam Candidate</div>
+                        </div>
+                    </div>
+                    <button id="logoutBtn" class="p-2 rounded-lg hover:bg-white/5 transition-colors" title="Logout">
+                        <span class="text-lg">🚪</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <!-- Welcome Section -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-xs font-medium">
+                        👋 Welcome Back
+                    </span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold mb-2">
+                    Hello, <span id="welcomeName" class="gradient-text">Candidate</span>!
+                </h1>
+                <p class="text-gray-400">Ready to showcase your coding expertise?</p>
+            </div>
+
+            <!-- Test Cards Grid -->
+            <div class="grid lg:grid-cols-2 gap-6 mb-8">
+                <!-- Java Card -->
+                <div class="glass-card rounded-2xl p-6 glow-java">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-java/10 border border-java/20 flex items-center justify-center">
+                                <span class="text-3xl">☕</span>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold">Java Assessment</h2>
+                                <p class="text-sm text-gray-400">Full Stack Java Developer</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-java/10 border border-java/20 text-java text-xs font-semibold">POPULAR</span>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-600/50">
+                            <span>⏱️</span>
+                            <span class="text-sm font-medium">90 Min</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-600/50">
+                            <span>❓</span>
+                            <span class="text-sm font-medium">32 Questions</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                            <span>📊</span>
+                            <span class="text-sm font-medium text-yellow-400">Medium-Hard</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 p-4 rounded-xl bg-dark-600/30 mb-6">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">30</div>
+                            <div class="text-xs text-gray-400">MCQs</div>
+                        </div>
+                        <div class="w-px h-10 bg-white/10"></div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">2</div>
+                            <div class="text-xs text-gray-400">Coding (DSA)</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">🤖</span>
+                            <span class="text-sm">AI Proctoring</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">🎥</span>
+                            <span class="text-sm">Live Monitoring</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">🔍</span>
+                            <span class="text-sm">Plagiarism Check</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">⚡</span>
+                            <span class="text-sm">Real-time Feedback</span>
+                        </div>
+                    </div>
+                    <button onclick="generateToken('JAVA')" class="w-full py-3.5 rounded-xl btn-gradient-java font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                        <span>🔑</span>
+                        <span>Generate Token</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <!-- Python Card -->
+                <div class="glass-card rounded-2xl p-6 glow-python">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-python/10 border border-python/20 flex items-center justify-center">
+                                <span class="text-3xl">🐍</span>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold">Python Assessment</h2>
+                                <p class="text-sm text-gray-400">Python Backend Developer</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-python/10 border border-python/20 text-python text-xs font-semibold">TRENDING</span>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-600/50">
+                            <span>⏱️</span>
+                            <span class="text-sm font-medium">90 Min</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-600/50">
+                            <span>❓</span>
+                            <span class="text-sm font-medium">32 Questions</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                            <span>📊</span>
+                            <span class="text-sm font-medium text-yellow-400">Medium-Hard</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center gap-6 p-4 rounded-xl bg-dark-600/30 mb-6">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">30</div>
+                            <div class="text-xs text-gray-400">MCQs</div>
+                        </div>
+                        <div class="w-px h-10 bg-white/10"></div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">2</div>
+                            <div class="text-xs text-gray-400">Coding (DSA)</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">🤖</span>
+                            <span class="text-sm">AI Proctoring</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">🎥</span>
+                            <span class="text-sm">Live Monitoring</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">🔍</span>
+                            <span class="text-sm">Plagiarism Check</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-dark-600/30">
+                            <span class="text-lg">⚡</span>
+                            <span class="text-sm">Real-time Feedback</span>
+                        </div>
+                    </div>
+                    <button onclick="generateToken('PYTHON')" class="w-full py-3.5 rounded-xl btn-gradient-python font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                        <span>🔑</span>
+                        <span>Generate Token</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Grid -->
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold mb-4 flex items-center gap-2">
+                        <span>📋</span> Exam Guidelines
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Token valid for 90 minutes</li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Full-screen mode required</li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Camera access mandatory</li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span> No tab switching allowed</li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Max 5 violations allowed</li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Auto-submit on timeout</li>
+                    </ul>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold mb-4 flex items-center gap-2">
+                        <span>📈</span> Your Progress
+                    </h3>
+                    <div class="flex flex-col items-center">
+                        <div class="relative w-32 h-32 mb-4">
+                            <svg class="w-full h-full progress-ring" viewBox="0 0 100 100">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#6366f1"/>
+                                        <stop offset="100%" stop-color="#ec4899"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#progressGradient)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round" id="progressCircle"/>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-2xl font-bold">0%</span>
+                                <span class="text-xs text-gray-400">Completed</span>
+                            </div>
+                        </div>
+                        <div class="w-full space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Best Score</span>
+                                <span class="font-semibold">--</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Attempts</span>
+                                <span class="font-semibold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                            <span class="text-2xl">🔐</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Secure Environment</h3>
+                            <p class="text-xs text-gray-400">AI monitoring active</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-green-400 text-sm">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span>Protected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Token Modal -->
+    <div id="tokenModal" class="fixed inset-0 z-[100] modal-overlay hidden items-center justify-center p-4">
+        <div class="glass-card rounded-2xl p-8 max-w-md w-full transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center mx-auto mb-4">
+                    <span class="text-3xl">🔐</span>
+                </div>
+                <h2 class="text-2xl font-bold mb-1">Your Exam Token</h2>
+                <p class="text-sm text-gray-400">Copy this token to start your exam</p>
+            </div>
+            <div class="bg-dark-600/50 rounded-xl p-4 mb-4 border border-dashed border-brand-primary/30">
+                <div class="flex items-center justify-between gap-4">
+                    <span id="generatedToken" class="text-2xl font-mono font-bold tracking-wider flex-1 text-center">XXXX-XXXX</span>
+                    <button onclick="copyToken()" class="p-2 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 transition-colors" title="Copy">
+                        <span id="copyIcon" class="text-xl">📋</span>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-center gap-2 text-sm text-gray-400 mb-6">
+                <span>⏱️</span>
+                <span>Expires in:</span>
+                <span id="tokenExpiry" class="text-yellow-400 font-mono font-semibold">90:00</span>
+            </div>
+            <div class="space-y-3 mb-6">
+                <div class="flex items-center gap-3 text-sm">
+                    <div class="w-7 h-7 rounded-full bg-brand-primary/20 flex items-center justify-center text-xs font-bold">1</div>
+                    <span class="text-gray-300">Copy the token above</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <div class="w-7 h-7 rounded-full bg-brand-primary/20 flex items-center justify-center text-xs font-bold">2</div>
+                    <span class="text-gray-300">Click "Enter Exam" below</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <div class="w-7 h-7 rounded-full bg-brand-primary/20 flex items-center justify-center text-xs font-bold">3</div>
+                    <span class="text-gray-300">Paste token to start</span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeTokenModal()" class="flex-1 py-3 rounded-xl bg-dark-600 hover:bg-dark-600/80 transition-colors font-medium">Close</button>
+                <a href="token-entry.html" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-secondary text-center font-medium hover:opacity-90 transition-opacity">Enter Exam →</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.username) {
+            document.getElementById('userInitial').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('candidateName').textContent = user.username;
+            document.getElementById('welcomeName').textContent = user.username;
+        }
+        window.addEventListener('load', () => {
+            const circle = document.getElementById('progressCircle');
+            if (circle) {
+                setTimeout(() => {
+                    circle.style.strokeDashoffset = '264';
+                    circle.style.transition = 'stroke-dashoffset 1s ease';
+                }, 500);
+            }
+        });
+        async function generateToken(testType) {
+            const authManager = new AuthManager();
+            const user = authManager.getUser();
+            const token = authManager.getToken();
+            
+            console.log('User:', user);
+            console.log('Token exists:', !!token);
+            
+            if (!user || !user.username) { 
+                alert('Please login first'); 
+                return; 
+            }
+            
+            if (!token) {
+                alert('Session expired. Please login again.');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const response = await authManager.makeAuthenticatedRequest('http://localhost:8080/api/token/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.username, testType: testType })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        localStorage.setItem('exam_token', data.token);
+                        localStorage.setItem('exam_test_type', testType);
+                        localStorage.setItem('exam_expires', data.expiresAt);
+                        document.getElementById('generatedToken').textContent = data.token;
+                        const modal = document.getElementById('tokenModal');
+                        const content = document.getElementById('modalContent');
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                        setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
+                        startExpiryTimer();
+                    }
+                } else { 
+                    const errorText = await response.text();
+                    console.error('Token generation failed:', errorText);
+                    alert('Failed to generate token: ' + errorText); 
+                }
+            } catch (error) { 
+                console.error('Token generation error:', error); 
+                alert('Error: ' + error.message + '\n\nMake sure Java backend is running on port 8080'); 
+            }
+        }
+        function closeTokenModal() {
+            const modal = document.getElementById('tokenModal');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        }
+        function copyToken() {
+            const token = document.getElementById('generatedToken').textContent;
+            navigator.clipboard.writeText(token).then(() => {
+                const icon = document.getElementById('copyIcon');
+                icon.textContent = '✅';
+                setTimeout(() => { icon.textContent = '📋'; }, 2000);
+            });
+        }
+        function startExpiryTimer() {
+            let minutes = 90, seconds = 0;
+            const timer = setInterval(() => {
+                if (seconds === 0) {
+                    if (minutes === 0) { clearInterval(timer); return; }
+                    minutes--; seconds = 59;
+                } else { seconds--; }
+                document.getElementById('tokenExpiry').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

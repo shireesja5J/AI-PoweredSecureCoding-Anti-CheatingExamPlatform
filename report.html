@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Report - SecureExam AI</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .report-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+        }
+        
+        .report-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .report-header {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .report-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            color: #34d399;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .report-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .candidate-info {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.125rem;
+        }
+        
+        .score-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .score-circle {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+        
+        .score-circle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .score-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 10;
+        }
+        
+        .score-progress {
+            fill: none;
+            stroke: url(#scoreGradient);
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 502.7;
+            stroke-dashoffset: 502.7;
+            transition: stroke-dashoffset 1.5s ease;
+        }
+        
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .score-value {
+            display: block;
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .score-label {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .score-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+        }
+        
+        .score-status.passed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+        
+        .score-status.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .details-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .details-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .details-header h3 {
+            font-size: 1.25rem;
+        }
+        
+        .plagiarism-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .plagiarism-low {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+        }
+        
+        .plagiarism-medium {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .plagiarism-high {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+        }
+        
+        .plagiarism-score {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .violation-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .violation-severity {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .violation-severity.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .violation-severity.high {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .violation-severity.medium {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+        
+        .suggestions-box {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid #6366f1;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="report-page">
+    <div class="report-container">
+        <div class="report-header">
+            <div class="report-badge">
+                <span>📋</span>
+                <span>Exam Complete</span>
+            </div>
+            <h1>Your Exam Report</h1>
+            <p class="candidate-info">
+                <span id="candidateName">Candidate</span> • 
+                <span id="testType">Java</span> Assessment
+            </p>
+        </div>
+        
+        <div class="score-section">
+            <div class="score-circle">
+                <svg width="180" height="180" viewBox="0 0 180 180">
+                    <defs>
+                        <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#6366f1"/>
+                            <stop offset="100%" style="stop-color:#ec4899"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="score-bg" cx="90" cy="90" r="80"></circle>
+                    <circle id="scoreProgress" class="score-progress" cx="90" cy="90" r="80"></circle>
+                </svg>
+                <div class="score-text">
+                    <span id="finalScore" class="score-value">0%</span>
+                    <span class="score-label">Overall Score</span>
+                </div>
+            </div>
+            <div id="scoreStatus" class="score-status passed">
+                <span>✓</span>
+                <span>Passed</span>
+            </div>
+        </div>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">⏱️</div>
+                <div id="timeTaken" class="metric-value">0:00</div>
+                <div class="metric-label">Time Taken</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">❓</div>
+                <div id="mcqScore" class="metric-value">0/30</div>
+                <div class="metric-label">MCQ Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">💻</div>
+                <div id="codingScore" class="metric-value">0%</div>
+                <div class="metric-label">Coding Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">⚠️</div>
+                <div id="violationCount" class="metric-value">0</div>
+                <div class="metric-label">Violations</div>
+            </div>
+        </div>
+        
+        <div class="details-section">
+            <div class="details-header">
+                <span>🔍</span>
+                <h3>Plagiarism Analysis</h3>
+            </div>
+            <div id="plagiarismBox" class="plagiarism-box plagiarism-low">
+                <div>
+                    <div class="metric-label">Similarity Score</div>
+                    <div id="plagiarismScore" class="plagiarism-score">0%</div>
+                </div>
+                <div id="plagiarismStatus">Original Work</div>
+            </div>
+        </div>
+        
+        <div class="details-section">
+            <div class="details-header">
+                <span>🛡️</span>
+                <h3>AI Proctoring Analysis</h3>
+            </div>
+            <div id="violationsList">
+                <p style="color: rgba(255,255,255,0.5);">No violations recorded</p>
+            </div>
+        </div>
+        
+        <div class="details-section">
+            <div class="details-header">
+                <span>💡</span>
+                <h3>Improvement Suggestions</h3>
+            </div>
+            <div id="suggestionsBox" class="suggestions-box">
+                Keep practicing! Focus on time management and code optimization.
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="dashboard.html" class="btn btn-premium btn-large">
+                <span>← Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Load report data from localStorage
+        window.addEventListener('load', () => {
+            const reportData = JSON.parse(localStorage.getItem('exam_report') || '{}');
+            
+            if (reportData.candidateName) {
+                document.getElementById('candidateName').textContent = reportData.candidateName;
+            }
+            if (reportData.testType) {
+                document.getElementById('testType').textContent = reportData.testType;
+            }
+            
+            // Animate score
+            const score = reportData.score || 0;
+            const circumference = 2 * Math.PI * 80;
+            const offset = circumference - (score / 100) * circumference;
+            
+            setTimeout(() => {
+                document.getElementById('scoreProgress').style.strokeDashoffset = offset;
+                
+                // Animate score number
+                let current = 0;
+                const interval = setInterval(() => {
+                    if (current >= score) {
+                        clearInterval(interval);
+                        document.getElementById('finalScore').textContent = score + '%';
+                    } else {
+                        current++;
+                        document.getElementById('finalScore').textContent = current + '%';
+                    }
+                }, 20);
+            }, 500);
+            
+            // Update pass/fail status
+            const statusEl = document.getElementById('scoreStatus');
+            if (score >= 60) {
+                statusEl.className = 'score-status passed';
+                statusEl.innerHTML = '<span>✓</span><span>Passed</span>';
+            } else {
+                statusEl.className = 'score-status failed';
+                statusEl.innerHTML = '<span>✗</span><span>Needs Improvement</span>';
+            }
+            
+            // Update metrics
+            if (reportData.timeTaken) {
+                const mins = Math.floor(reportData.timeTaken / 60);
+                const secs = reportData.timeTaken % 60;
+                document.getElementById('timeTaken').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            if (reportData.mcqScore !== undefined) {
+                document.getElementById('mcqScore').textContent = `${reportData.mcqScore}/30`;
+            }
+            
+            if (reportData.codingScore !== undefined) {
+                document.getElementById('codingScore').textContent = reportData.codingScore + '%';
+            }
+            
+            if (reportData.violations) {
+                document.getElementById('violationCount').textContent = reportData.violations.length;
+                
+                // Render violations
+                if (reportData.violations.length > 0) {
+                    const list = document.getElementById('violationsList');
+                    list.innerHTML = reportData.violations.map(v => `
+                        <div class="violation-item">
+                            <span class="violation-severity ${v.severity.toLowerCase()}">${v.severity}</span>
+                            <span>${v.type}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            // Update plagiarism
+            if (reportData.plagiarismScore !== undefined) {
+                const pScore = reportData.plagiarismScore;
+                document.getElementById('plagiarismScore').textContent = pScore + '%';
+                
+                const box = document.getElementById('plagiarismBox');
+                const status = document.getElementById('plagiarismStatus');
+                
+                if (pScore > 50) {
+                    box.className = 'plagiarism-box plagiarism-high';
+                    status.textContent = 'High Similarity Detected';
+                } else if (pScore > 20) {
+                    box.className = 'plagiarism-box plagiarism-medium';
+                    status.textContent = 'Moderate Similarity';
+                } else {
+                    box.className = 'plagiarism-box plagiarism-low';
+                    status.textContent = 'Original Work';
+                }
+            }
+            
+            if (reportData.suggestions) {
+                document.getElementById('suggestionsBox').textContent = reportData.suggestions;
+            }
+        });
+    </script>
+</body>
+</html>

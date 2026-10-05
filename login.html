@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Secure Exam Platform - Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="login-page">
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+    
+    <!-- Floating Particles -->
+    <div class="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card glassmorphism">
+            <div class="logo-section">
+                <div class="logo-ring">
+                    <div class="logo-pulse"></div>
+                    <div class="logo">🛡️</div>
+                </div>
+                <h1 class="brand-title">
+                    <span class="brand-gradient">SecureExam</span>
+                    <span class="brand-ai">AI</span>
+                </h1>
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    <span>Live Proctoring Active</span>
+                </div>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="input-group floating">
+                    <input type="text" id="username" name="username" required placeholder=" ">
+                    <label for="username">
+                        <span class="input-icon">👤</span>
+                        Username
+                    </label>
+                    <div class="input-glow"></div>
+                </div>
+                
+                <div class="input-group floating">
+                    <input type="password" id="password" name="password" required placeholder=" ">
+                    <label for="password">
+                        <span class="input-icon">🔐</span>
+                        Password
+                    </label>
+                    <div class="input-glow"></div>
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <span id="eyeIcon">👁️</span>
+                    </button>
+                </div>
+                
+                <button type="submit" class="btn btn-premium btn-full">
+                    <span class="btn-glow"></span>
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-icon">→</span>
+                    <span class="btn-loader hidden">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+            
+            <div id="errorMessage" class="error-message glass hidden"></div>
+        </div>
+    </div>
+    
+    <script src="js/auth.js"></script>
+    <script>
+        function togglePassword() {
+            const password = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (password.type === 'password') {
+                password.type = 'text';
+                eyeIcon.textContent = '🙈';
+            } else {
+                password.type = 'password';
+                eyeIcon.textContent = '👁️';
+            }
+        }
+    </script>
+</body>
+</html>
